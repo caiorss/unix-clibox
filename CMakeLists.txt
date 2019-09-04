@@ -51,14 +51,13 @@ endmacro()
 
 find_package(CLI11 REQUIRED)
 
-add_executable(clibox.listdir listdir.cpp)
-target_link_libraries(clibox.listdir pthread stdc++fs)
-copy_after_build(clibox.listdir)
+add_executable(cb.ls listdir.cpp)
+target_link_libraries(cb.ls pthread stdc++fs)
+copy_after_build(cb.ls)
 
-
-add_executable(text-search text-search.cpp)
-target_link_libraries(text-search pthread stdc++fs)
-copy_after_build(text-search)
+add_executable(cb.text-search text-search.cpp)
+target_link_libraries(cb.text-search pthread stdc++fs)
+copy_after_build(cb.text-search)
 
 
 
