@@ -11,15 +11,19 @@ class DirectoryNavigator
 {
     bool m_directory_only = false;
     bool m_fullpath = false;
+    bool m_file_only = false;
 public:
 
-    DirectoryNavigator()
-    {
-    }
+    DirectoryNavigator(){}
 
     void directory_only(bool flag)
     {
         m_directory_only = flag;
+    }
+
+    void file_only(bool flag)
+    {
+        m_file_only = flag;
     }
 
     void fullpath(bool flag)
@@ -31,6 +35,14 @@ public:
     {
         auto& self = *this;
 
+        #if 0
+        std::cout << std::boolalpha;
+        std::cout << " directory-only = " << m_directory_only << "\n";
+        std::cout << " file_only      = " << m_file_only << "\n";
+        std::cout << " fullpath       = " << m_fullpath << "\n";
+        #endif
+
+        using pred_fun_ptr = bool (*) (fs::path const&);
         using pred_fun = std::function<bool (fs::path const&)>;
         using action_fun = std::function<void (fs::path const&)>;
 
@@ -39,12 +51,12 @@ public:
         action_fun action;
 
         if(self.m_directory_only)
-            predicate = [](fs::path const& p) -> bool
-            {
-                return fs::is_directory(p);
-            };
+            predicate = static_cast<pred_fun_ptr>(&fs::is_directory);
 
-        if(!self.m_directory_only)
+        if(self.m_file_only)
+            predicate = static_cast<pred_fun_ptr>(&fs::is_regular_file);
+
+        if(!self.m_directory_only && !self.m_file_only)
             predicate = [](fs::path const& ) -> bool { return true;  };
 
         action = [this](fs::path const& p){
@@ -90,6 +102,10 @@ int main(int argc, char** argv)
     int flag_list_dir = 0;
     app.add_flag("--dir", flag_list_dir, "List directory only");
 
+    // List only regular files
+    int flag_list_file = 0;
+    app.add_flag("--file", flag_list_file, "List only regular files");
+
     // If true, show full path to file
     int fullpath = 0;
     app.add_flag("--full-path", fullpath, "Show full path.");
@@ -109,6 +125,7 @@ int main(int argc, char** argv)
 
     DirectoryNavigator dnav;
     dnav.directory_only(flag_list_dir);
+    dnav.file_only(flag_list_file);
     dnav.fullpath(fullpath);
     dnav.listdir(dirpath);
 
