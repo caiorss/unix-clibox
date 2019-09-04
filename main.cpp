@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <filesystem>
+#include <cstring> // strtok
 
 #include <CLI/CLI.hpp>
 
@@ -13,6 +14,7 @@ class DirectoryNavigator
     bool m_fullpath       = false;
     bool m_file_only      = false;
     bool m_recursive      = false;
+    bool m_lastmodified   = false;
 public:
 
     DirectoryNavigator(){}
@@ -35,6 +37,11 @@ public:
     void recursive(bool flag)
     {
         m_recursive = flag;
+    }
+
+    void lastmodified(bool flag)
+    {
+        m_lastmodified = flag;
     }
 
     void listdir(std::string path)
@@ -66,9 +73,21 @@ public:
             predicate = [](fs::path const& ) -> bool { return true;  };
 
         action = [this](fs::path const& p){
+            if(m_lastmodified)
+            {
+                auto ftime = fs::last_write_time(p);
+                auto ctime = decltype(ftime)::clock::to_time_t(ftime);
+                auto stime = strtok(std::asctime(std::localtime(&ctime)), "\n");
+
+                std::cout << std::left  << std::setw(25) << stime
+                          << " ";
+            }
+
             if(!m_fullpath)
-                std::cout << p.filename().string() << std::endl;
-            else
+            {
+                std::cout  << std::left << std::setw(30) << p.filename().string()
+                           << std::endl;
+            } else
                 std::cout << p.string() << std::endl;
         };
 
@@ -128,6 +147,9 @@ int main(int argc, char** argv)
     int fullpath = 0;
     app.add_flag("-p,--fullpath", fullpath, "Show full path.");
 
+    int lastmodified = 0;
+    app.add_flag("-t,--time", lastmodified, "Show last modified time.");
+
     int recursive = 0;
     app.add_flag("-r,--recursive", recursive, "List directory in a recursive way.");
 
@@ -146,8 +168,15 @@ int main(int argc, char** argv)
     dnav.directory_only(flag_list_dir);
     dnav.file_only(flag_list_file);
     dnav.fullpath(fullpath);
+    dnav.lastmodified(lastmodified);
     dnav.recursive(recursive);
-    dnav.listdir(dirpath);
+
+    try {
+        dnav.listdir(dirpath);
+    } catch (fs::filesystem_error& ex) {
+        std::cerr << " [ERROR] " << ex.what() << std::endl;
+        return EXIT_FAILURE;
+    }
 
     return EXIT_SUCCESS;
 }
