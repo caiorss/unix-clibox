@@ -16,33 +16,12 @@ class DirectoryNavigator
     bool m_recursive      = false;
     bool m_lastmodified   = false;
 public:
-
     DirectoryNavigator(){}
-
-    void directory_only(bool flag)
-    {
-        m_directory_only = flag;
-    }
-
-    void file_only(bool flag)
-    {
-        m_file_only = flag;
-    }
-
-    void fullpath(bool flag)
-    {
-        m_fullpath = flag;
-    }
-
-    void recursive(bool flag)
-    {
-        m_recursive = flag;
-    }
-
-    void lastmodified(bool flag)
-    {
-        m_lastmodified = flag;
-    }
+    void directory_only(bool flag) {  m_directory_only = flag;  }
+    void file_only(bool flag)      {  m_file_only = flag;       }
+    void fullpath(bool flag)       {  m_fullpath = flag;        }
+    void recursive(bool flag)      {  m_recursive = flag;       }
+    void lastmodified(bool flag)   {  m_lastmodified = flag;    }
 
     void listdir(std::string path)
     {
