@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <filesystem>
+#include <bitset>
 #include <cstring> // strtok
 
 #include <CLI/CLI.hpp>
@@ -15,6 +16,7 @@ class DirectoryNavigator
     bool m_file_only      = false;
     bool m_recursive      = false;
     bool m_lastmodified   = false;
+    bool m_permission     = false;
 public:
     DirectoryNavigator(){}
     void directory_only(bool flag) {  m_directory_only = flag;  }
@@ -22,6 +24,7 @@ public:
     void fullpath(bool flag)       {  m_fullpath = flag;        }
     void recursive(bool flag)      {  m_recursive = flag;       }
     void lastmodified(bool flag)   {  m_lastmodified = flag;    }
+    void permission(bool flag)     {  m_permission = flag; }
 
     void listdir(std::string path)
     {
@@ -52,6 +55,22 @@ public:
             predicate = [](fs::path const& ) -> bool { return true;  };
 
         action = [this](fs::path const& p){
+            if(m_permission)
+            {
+                auto pm = fs::status(p).permissions();
+
+                std::cout << ((pm & fs::perms::owner_read) != fs::perms::none ? "r" : "-")
+                          << ((pm & fs::perms::owner_write) != fs::perms::none ? "w" : "-")
+                          << ((pm & fs::perms::owner_exec) != fs::perms::none ? "x" : "-")
+                          << ((pm & fs::perms::group_read) != fs::perms::none ? "r" : "-")
+                          << ((pm & fs::perms::group_write) != fs::perms::none ? "w" : "-")
+                          << ((pm & fs::perms::group_exec) != fs::perms::none ? "x" : "-")
+                          << ((pm & fs::perms::others_read) != fs::perms::none ? "r" : "-")
+                          << ((pm & fs::perms::others_write) != fs::perms::none ? "w" : "-")
+                          << ((pm & fs::perms::others_exec) != fs::perms::none ? "x" : "-")
+                          << "  ";
+            }
+
             if(m_lastmodified)
             {
                 auto ftime = fs::last_write_time(p);
@@ -120,6 +139,9 @@ int main(int argc, char** argv)
     int lastmodified = 0;
     app.add_flag("-t,--time", lastmodified, "Show last modified time.");
 
+    int permission = 0;
+    app.add_flag("--perm", permission, "Show file/directory permission.");
+
     int recursive = 0;
     app.add_flag("-r,--recursive", recursive, "List directory in a recursive way.");
 
@@ -140,6 +162,7 @@ int main(int argc, char** argv)
     dnav.fullpath(fullpath);
     dnav.lastmodified(lastmodified);
     dnav.recursive(recursive);
+    dnav.permission(permission);
 
     try {
         dnav.listdir(dirpath);
