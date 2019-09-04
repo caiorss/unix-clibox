@@ -56,3 +56,9 @@ target_link_libraries(clibox.listdir pthread stdc++fs)
 copy_after_build(clibox.listdir)
 
 
+add_executable(text-search text-search.cpp)
+target_link_libraries(text-search pthread stdc++fs)
+copy_after_build(text-search)
+
+
+
