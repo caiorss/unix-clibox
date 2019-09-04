@@ -1,0 +1,10 @@
+*.user
+bin/*
+docs/*
+*.html
+*.exe
+*.tar.gz
+*.dll
+*.so
+gdb.txt
+.gdb*
