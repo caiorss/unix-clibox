@@ -70,12 +70,11 @@ int main(int argc, char** argv)
     //app.footer("\n Creator: Somebody else.");
 
     std::string pattern;
-    app.add_option("pattern", pattern, "Text pattern")->required();
+    app.add_option("<PATTERN>", pattern, "Text pattern")->required();
 
     // Sets directory that will be listed
-    std::string filepath;
-    app.add_option("file", filepath, "File to be searched")->required();
-
+    std::vector<std::string> filepaths;
+    app.add_option("<FILE>", filepaths, "File to be searched")->required();
 
 
     // ----- Parse Arguments ---------//
