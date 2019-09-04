@@ -39,9 +39,9 @@ namespace fileutils
          while(std::getline(fs, line)) { line_processor(line); }
      }
 
-     bool contains_string(std::string str, std::string pattern)
+     bool contains_string(std::string pattern, std::string text)
      {
-         return str.find(pattern) != std::string::npos;
+         return text.find(pattern) != std::string::npos;
      }
 
      void search_file(std::string filename, std::string pattern)
