@@ -45,11 +45,6 @@ namespace fileutils
          }
      }
 
-     bool contains_string(std::string pattern, std::string text)
-     {
-         return text.find(pattern) != std::string::npos;
-     }
-
      bool contains_string2(std::string const& s, const std::string& cont)
      {
          return cont.end() != std::search(cont.begin(), cont.end()
