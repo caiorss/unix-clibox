@@ -4,6 +4,7 @@
 #include <filesystem>
 #include <bitset>
 #include <cstring> // strtok
+#include <regex>
 
 #include <CLI/CLI.hpp>
 
@@ -44,17 +45,17 @@ namespace fileutils
          return text.find(pattern) != std::string::npos;
      }
 
-     void search_file(std::string filename, std::string pattern)
+     template<typename MATCHER>
+     void search_file(std::string pattern, std::string filename, MATCHER&& matcher)
      {
          using namespace std::string_literals;
-
          long line_number = 0;
          bool pattern_found = false;
 
          process_line(filename,
                       [&](std::string const& line)
                       {
-                          if(contains_string(line, pattern))
+                          if(matcher(line))
                           {
                               auto p = fs::path(filename);
 
@@ -64,7 +65,6 @@ namespace fileutils
                                             << "  => File: "s + p.filename().string() << "\n";
                                   std::cout << "  " << std::string(50, '-') << "\n";
                               }
-
                               std::cout << std::setw(10) << line_number
                                         << " "
                                         << std::setw(10) << line
@@ -74,6 +74,13 @@ namespace fileutils
                       });
      }
 
+     void search_file_for_text(std::string pattern, std::string filename)
+     {
+         search_file(pattern, filename, [=](std::string const& line)
+                     {
+                         return contains_string(pattern, line) ;
+                     });
+     }
 
 } // * --- End of namespace fileutils --- * //
 
@@ -103,7 +110,7 @@ int main(int argc, char** argv)
 
     //------ Program Actions ---------//
 
-    std::cout << " Seach results for pattern: '" << pattern << "' \n";
+    std::cout << "\n Seach results for pattern: '" << pattern << "'";
 
     for (auto const& fname : filepaths)
     {
@@ -112,6 +119,12 @@ int main(int argc, char** argv)
             fileutils::search_file_for_text(pattern, fname);
         } catch (std::logic_error& ex)
         {
+            std::cerr << " [ERROR / FILE] " << ex.what() << "\n";
+            return  EXIT_FAILURE;
+        } catch  (std::regex_error& ex)
+        {
+            std::cerr << " [ERROR / REGEX] " << ex.what() << "\n";
+            return EXIT_FAILURE;
         }
     }
 
