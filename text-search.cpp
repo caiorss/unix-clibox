@@ -33,7 +33,7 @@ namespace fileutils
          auto fs = std::ifstream(filename);
          // Report error to the caller
          if(!fs) {
-             throw std::runtime_error(" Error: failed to open file: "s + filename);
+             throw std::logic_error(" Error: failed to open file: "s + filename);
          }
          std::string line;
          while(std::getline(fs, line)) { line_processor(line); }
@@ -107,10 +107,11 @@ int main(int argc, char** argv)
 
     for (auto const& fname : filepaths)
     {
-        try {
-            fileutils::search_file(fname, pattern);
-        } catch (std::exception& ex) {
-            std::cout << " [ERROR] " << ex.what() << "\n";
+        try
+        {
+            fileutils::search_file_for_text(pattern, fname);
+        } catch (std::logic_error& ex)
+        {
         }
     }
 
