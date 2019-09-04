@@ -51,6 +51,18 @@ namespace fileutils
                                          ,std::boyer_moore_searcher(s.begin(), s.end()));
      }
 
+     std::string
+     to_lowercase(std::string const& text)
+     {
+         std::string t = text;
+         std::transform( t.begin(),
+                         t.end(),
+                         t.begin(),
+                         [](char x){ return std::toupper(x); }
+                        );
+         return t;
+     }
+
      template<typename MATCHER>
      void search_file(std::string pattern, std::string filename, MATCHER&& matcher)
      {
