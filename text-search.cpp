@@ -45,6 +45,12 @@ namespace fileutils
          return text.find(pattern) != std::string::npos;
      }
 
+     bool contains_string2(std::string const& s, const std::string& cont)
+     {
+         return cont.end() != std::search(cont.begin(), cont.end()
+                                         ,std::boyer_moore_searcher(s.begin(), s.end()));
+     }
+
      template<typename MATCHER>
      void search_file(std::string pattern, std::string filename, MATCHER&& matcher)
      {
