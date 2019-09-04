@@ -10,6 +10,7 @@ namespace fs = std::filesystem;
 class DirectoryNavigator
 {
     bool m_directory_only = false;
+    bool m_fullpath = false;
 public:
 
     DirectoryNavigator()
@@ -21,32 +22,39 @@ public:
         m_directory_only = flag;
     }
 
+    void fullpath(bool flag)
+    {
+        m_fullpath = flag;
+    }
+
     void listdir(std::string path)
     {
         auto& self = *this;
 
         using pred_fun = std::function<bool (fs::path const&)>;
+        using action_fun = std::function<void (fs::path const&)>;
 
-        pred_fun predicate;
+        // Predicate function
+        pred_fun   predicate;
+        action_fun action;
 
         if(self.m_directory_only)
-        {
             predicate = [](fs::path const& p) -> bool
             {
                 return fs::is_directory(p);
             };
-        }
-        else
-        {
-            predicate = [](fs::path const& ) -> bool { return true;  };
-        }
 
-        self.iterate_dirlist(
-            path
-          , predicate // [&](fs::path const& p){ return true; }
-          , [&](fs::path const& p){
+        if(!self.m_directory_only)
+            predicate = [](fs::path const& ) -> bool { return true;  };
+
+        action = [this](fs::path const& p){
+            if(!m_fullpath)
                 std::cout << p.filename().string() << std::endl;
-            });
+            else
+                std::cout << p.string() << std::endl;
+        };
+
+        self.iterate_dirlist(path, predicate, action);
     }
 
 private:
@@ -54,7 +62,7 @@ private:
     template<typename Predicate, typename Action>
     void iterate_dirlist(std::string path, Predicate&& pred, Action&& act)
     {
-        for(const auto& p: fs::directory_iterator(path))
+        for(auto& p: fs::directory_iterator(path))
             if(pred(p)) { act(p);  }
     }
 
@@ -62,7 +70,7 @@ private:
 
 void list_directory(std::string path, bool listDirOnly = false)
 {
-    for(const auto& p: fs::directory_iterator(path))
+    for(auto& p: fs::directory_iterator(path))
     {
         if(!listDirOnly && p.is_directory())
             std::cout << p.path().filename().string() << std::endl;
@@ -82,6 +90,10 @@ int main(int argc, char** argv)
     int flag_list_dir = 0;
     app.add_flag("--dir", flag_list_dir, "List directory only");
 
+    // If true, show full path to file
+    int fullpath = 0;
+    app.add_flag("--full-path", fullpath, "Show full path.");
+
 
     // ----- Parse Arguments ---------//
     try {
@@ -97,6 +109,7 @@ int main(int argc, char** argv)
 
     DirectoryNavigator dnav;
     dnav.directory_only(flag_list_dir);
+    dnav.fullpath(fullpath);
     dnav.listdir(dirpath);
 
     return EXIT_SUCCESS;
