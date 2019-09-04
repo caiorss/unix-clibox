@@ -38,7 +38,11 @@ namespace fileutils
              throw std::logic_error(" Error: failed to open file: "s + filename);
          }
          std::string line;
-         while(std::getline(fs, line)) { line_processor(line); }
+
+         while(std::getline(fs, line))
+         {
+             if(!line_processor(line)) break;
+         }
      }
 
      bool contains_string(std::string pattern, std::string text)
@@ -72,7 +76,7 @@ namespace fileutils
      }
 
      template<typename MATCHER>
-     void search_file(std::string filename, MATCHER&& matcher)
+     void search_file(bool not_show_lines, std::string filename, MATCHER&& matcher)
      {
          using namespace std::string_literals;
          long line_number = 0;
@@ -90,6 +94,9 @@ namespace fileutils
                                   std::cout << "\n\n"
                                             << "  => File: "s + p.filename().string() << "\n";
                                   std::cout << "  " << std::string(50, '-') << "\n";
+
+                                  // Exit this lambda function
+                                  if(not_show_lines) { return false; }
                               }
 
                               std::cout << std::setw(10) << line_number
@@ -98,17 +105,29 @@ namespace fileutils
                                         << "\n";
                           }
                           ++line_number;
+
+                          return true;
                       });
      }
 
-     void search_file_for_text(std::string pattern, std::string filename)
+     void search_file_for_text(std::string pattern, std::string filename, bool not_show_lines)
      {
-         search_file(filename, [=](std::string const& line)
+         search_file(not_show_lines, filename, [=](std::string const& line)
                      {
                          return contains_string2( to_lowercase(pattern)
                                                 , to_lowercase(line)) ;
                      });
      }
+
+     void search_file_for_regex(std::string pattern, std::string filename, bool not_show_lines)
+     {
+         std::regex reg{pattern};
+         search_file(not_show_lines, filename, [=, &reg](std::string const& line)
+                     {
+                         return std::regex_search(line, reg) ;
+                     });
+     }
+
 
 } // * --- End of namespace fileutils --- * //
 
@@ -125,6 +144,16 @@ int main(int argc, char** argv)
     // Sets directory that will be listed
     std::vector<std::string> filepaths;
     app.add_option("<FILE>", filepaths, "File to be searched")->required();
+
+    // If the flag is set (true), this application uses the regex
+    // for searching in the target file instead of an input text.
+    bool use_regex = false;
+    app.add_flag("--regex", use_regex, "Use regex");
+
+    // If this flag is set, this app. does not show the line number
+    // ,instead only print the file names where the pattern was found.
+    bool not_lines = false;
+    app.add_flag("--not-lines", not_lines, "Does not show lines");
 
 
     // ----- Parse Arguments ---------//
@@ -144,7 +173,10 @@ int main(int argc, char** argv)
     {
         try
         {
-            fileutils::search_file_for_text(pattern, fname);
+            if(!use_regex)
+                fileutils::search_file_for_text(pattern, fname, not_lines);
+            else
+                fileutils::search_file_for_regex(pattern, fname, not_lines);
         } catch (std::logic_error& ex)
         {
             std::cerr << " [ERROR / FILE] " << ex.what() << "\n";
