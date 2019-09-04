@@ -96,15 +96,6 @@ private:
 
 };
 
-void list_directory(std::string path, bool listDirOnly = false)
-{
-    for(auto& p: fs::directory_iterator(path))
-    {
-        if(!listDirOnly && p.is_directory())
-            std::cout << p.path().filename().string() << std::endl;
-    }
-}
-
 int main(int argc, char** argv)
 {
     CLI::App app{ "listdir"};
