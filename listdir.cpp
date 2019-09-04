@@ -102,14 +102,26 @@ private:
     void iterate_dirlist(std::string path, Predicate&& pred, Action&& act)
     {
         for(auto& p: fs::directory_iterator(path))
-            if(pred(p)) { act(p);  }
+            if(pred(p)) {
+                try { act(p); }
+                catch(fs::filesystem_error& ex)
+                {
+                    std::cerr << ex.what() << "\n";
+                }
+            }
     }
 
     template<typename Predicate, typename Action>
     void iterate_recursive_dirlist(std::string path, Predicate&& pred, Action&& act)
     {
         for(auto& p: fs::recursive_directory_iterator(path))
-            if(pred(p)) { act(p);  }
+            if(pred(p)) {
+                try { act(p); }
+                catch(fs::filesystem_error& ex)
+                {
+                    std::cerr << ex.what() << "\n";
+                }
+            }
     }
 
 
