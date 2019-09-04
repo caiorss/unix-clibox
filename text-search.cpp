@@ -5,6 +5,7 @@
 #include <bitset>
 #include <cstring> // strtok
 #include <regex>
+#include <algorithm>
 
 #include <CLI/CLI.hpp>
 
@@ -71,7 +72,7 @@ namespace fileutils
      }
 
      template<typename MATCHER>
-     void search_file(std::string pattern, std::string filename, MATCHER&& matcher)
+     void search_file(std::string filename, MATCHER&& matcher)
      {
          using namespace std::string_literals;
          long line_number = 0;
@@ -90,9 +91,10 @@ namespace fileutils
                                             << "  => File: "s + p.filename().string() << "\n";
                                   std::cout << "  " << std::string(50, '-') << "\n";
                               }
+
                               std::cout << std::setw(10) << line_number
                                         << " "
-                                        << std::setw(10) << line
+                                        << std::setw(10) << right_trim(line)
                                         << "\n";
                           }
                           ++line_number;
@@ -101,9 +103,10 @@ namespace fileutils
 
      void search_file_for_text(std::string pattern, std::string filename)
      {
-         search_file(pattern, filename, [=](std::string const& line)
+         search_file(filename, [=](std::string const& line)
                      {
-                         return contains_string(pattern, line) ;
+                         return contains_string2( to_lowercase(pattern)
+                                                , to_lowercase(line)) ;
                      });
      }
 
