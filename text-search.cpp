@@ -99,10 +99,21 @@ int main(int argc, char** argv)
     } catch (std::exception& ex) {
         std::cout << ex.what() << std::endl;
         return EXIT_FAILURE;
+    }        
+
+    //------ Program Actions ---------//
+
+    std::cout << " Seach results for pattern: '" << pattern << "' \n";
+
+    for (auto const& fname : filepaths)
+    {
+        try {
+            fileutils::search_file(fname, pattern);
+        } catch (std::exception& ex) {
+            std::cout << " [ERROR] " << ex.what() << "\n";
+        }
     }
 
-    //------ Program Actions ---------//    
-    fileutils::search_file(filepath, pattern);
 
     return EXIT_SUCCESS;
 }
