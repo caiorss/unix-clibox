@@ -155,9 +155,8 @@ int main(int argc, char** argv)
 
     // If this flag is set, this app. does not show the line number
     // ,instead only print the file names where the pattern was found.
-    bool not_lines = false;
-    app.add_flag("--not-lines", not_lines, "Does not show lines");
-
+    bool noline = false;
+    app.add_flag("--noline", noline, "Does not show lines");
 
     // ----- Parse Arguments ---------//
     try {
@@ -177,9 +176,9 @@ int main(int argc, char** argv)
         try
         {
             if(!use_regex)
-                fileutils::search_file_for_text(pattern, fname, not_lines);
+                fileutils::search_file_for_text(pattern, fname, noline);
             else
-                fileutils::search_file_for_regex(pattern, fname, not_lines);
+                fileutils::search_file_for_regex(pattern, fname, noline);
         } catch (std::logic_error& ex)
         {
             std::cerr << " [ERROR / FILE] " << ex.what() << "\n";
