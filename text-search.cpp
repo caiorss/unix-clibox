@@ -63,6 +63,13 @@ namespace fileutils
          return t;
      }
 
+     std::string
+     right_trim(const std::string& s)
+     {
+         size_t end = s.find_last_not_of(" \n\r\t\f\v");
+         return (end == std::string::npos) ? "" : s.substr(0, end + 1);
+     }
+
      template<typename MATCHER>
      void search_file(std::string pattern, std::string filename, MATCHER&& matcher)
      {
