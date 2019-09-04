@@ -24,6 +24,7 @@ namespace fileutils
              }
      }
 
+     /** Higher-order function for reading a file line-by-line */
      template<typename Action>
      void process_line(std::string const& filename, Action&& line_processor)
      {
@@ -45,16 +46,30 @@ namespace fileutils
 
      void search_file(std::string filename, std::string pattern)
      {
+         using namespace std::string_literals;
+
          long line_number = 0;
+         bool pattern_found = false;
 
          process_line(filename,
-                      [=, &line_number](std::string const& line)
+                      [&](std::string const& line)
                       {
                           if(contains_string(line, pattern))
+                          {
+                              auto p = fs::path(filename);
+
+                              if(!pattern_found) {
+                                  pattern_found = true;
+                                  std::cout << "\n\n"
+                                            << "  => File: "s + p.filename().string() << "\n";
+                                  std::cout << "  " << std::string(50, '-') << "\n";
+                              }
+
                               std::cout << std::setw(10) << line_number
                                         << " "
                                         << std::setw(10) << line
                                         << "\n";
+                          }
                           ++line_number;
                       });
      }
