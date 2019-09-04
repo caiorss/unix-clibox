@@ -51,8 +51,8 @@ endmacro()
 
 find_package(CLI11 REQUIRED)
 
-add_executable(main main.cpp)
-target_link_libraries(main pthread stdc++fs)
-copy_after_build(main)
+add_executable(clibox.listdir main.cpp)
+target_link_libraries(clibox.listdir pthread stdc++fs)
+copy_after_build(clibox.listdir)
 
 
