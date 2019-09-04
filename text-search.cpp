@@ -11,8 +11,41 @@
 
 namespace fs = std::filesystem;
 
+/// String utilties
+namespace strutils
+{
+    bool contains_string2(std::string const& s, const std::string& cont)
+    {
+        return cont.end() != std::search( cont.begin()
+                                        , cont.end()
+                                        , std::boyer_moore_searcher(s.begin(), s.end()));
+    }
+
+
+   std::string
+   to_lowercase(std::string const& text)
+   {
+       std::string t = text;
+       std::transform( t.begin(),
+                      t.end(),
+                      t.begin(),
+                      [](char x){ return std::toupper(x); }
+                      );
+       return t;
+   }
+
+   std::string
+   right_trim(const std::string& s)
+   {
+       size_t end = s.find_last_not_of(" \n\r\t\f\v");
+       return (end == std::string::npos) ? "" : s.substr(0, end + 1);
+   }
+} // * ---- End of namespace strtutils --- * //
+
 namespace fileutils
 {
+     using namespace strutils;
+
      template<typename Predicate, typename Action>
      void iterate_dirlist(std::string path, Predicate&& pred, Action&& act)
      {
@@ -43,31 +76,6 @@ namespace fileutils
          {
              if(!line_processor(line)) break;
          }
-     }
-
-     bool contains_string2(std::string const& s, const std::string& cont)
-     {
-         return cont.end() != std::search(cont.begin(), cont.end()
-                                         ,std::boyer_moore_searcher(s.begin(), s.end()));
-     }
-
-     std::string
-     to_lowercase(std::string const& text)
-     {
-         std::string t = text;
-         std::transform( t.begin(),
-                         t.end(),
-                         t.begin(),
-                         [](char x){ return std::toupper(x); }
-                        );
-         return t;
-     }
-
-     std::string
-     right_trim(const std::string& s)
-     {
-         size_t end = s.find_last_not_of(" \n\r\t\f\v");
-         return (end == std::string::npos) ? "" : s.substr(0, end + 1);
      }
 
      template<typename MATCHER>
