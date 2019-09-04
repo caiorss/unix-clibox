@@ -10,8 +10,9 @@ namespace fs = std::filesystem;
 class DirectoryNavigator
 {
     bool m_directory_only = false;
-    bool m_fullpath = false;
-    bool m_file_only = false;
+    bool m_fullpath       = false;
+    bool m_file_only      = false;
+    bool m_recursive      = false;
 public:
 
     DirectoryNavigator(){}
@@ -29,6 +30,11 @@ public:
     void fullpath(bool flag)
     {
         m_fullpath = flag;
+    }
+
+    void recursive(bool flag)
+    {
+        m_recursive = flag;
     }
 
     void listdir(std::string path)
@@ -66,8 +72,12 @@ public:
                 std::cout << p.string() << std::endl;
         };
 
-        self.iterate_dirlist(path, predicate, action);
-    }
+        if(!m_recursive)
+            self.iterate_dirlist(path, predicate, action);
+        else
+            self.iterate_recursive_dirlist(path, predicate, action);
+
+    } //--- End of function listdir() ---- //
 
 private:
 
@@ -77,6 +87,14 @@ private:
         for(auto& p: fs::directory_iterator(path))
             if(pred(p)) { act(p);  }
     }
+
+    template<typename Predicate, typename Action>
+    void iterate_recursive_dirlist(std::string path, Predicate&& pred, Action&& act)
+    {
+        for(auto& p: fs::recursive_directory_iterator(path))
+            if(pred(p)) { act(p);  }
+    }
+
 
 };
 
@@ -91,7 +109,7 @@ void list_directory(std::string path, bool listDirOnly = false)
 
 int main(int argc, char** argv)
 {
-    CLI::App app{ "ListDirectory"};
+    CLI::App app{ "listdir"};
     //app.footer("\n Creator: Somebody else.");
 
     // Sets directory that will be listed
@@ -110,6 +128,8 @@ int main(int argc, char** argv)
     int fullpath = 0;
     app.add_flag("--full-path", fullpath, "Show full path.");
 
+    int recursive = 0;
+    app.add_flag("--recursive", recursive, "List directory in a recursive way.");
 
     // ----- Parse Arguments ---------//
     try {
@@ -120,13 +140,13 @@ int main(int argc, char** argv)
         return EXIT_FAILURE;
     }
 
-
     //------ Program Actions ---------//
 
     DirectoryNavigator dnav;
     dnav.directory_only(flag_list_dir);
     dnav.file_only(flag_list_file);
     dnav.fullpath(fullpath);
+    dnav.recursive(recursive);
     dnav.listdir(dirpath);
 
     return EXIT_SUCCESS;
