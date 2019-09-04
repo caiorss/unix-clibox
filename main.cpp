@@ -118,18 +118,18 @@ int main(int argc, char** argv)
 
     // List only directory
     int flag_list_dir = 0;
-    app.add_flag("--dir", flag_list_dir, "List directory only");
+    app.add_flag("-d,--dir", flag_list_dir, "List directory only");
 
     // List only regular files
     int flag_list_file = 0;
-    app.add_flag("--file", flag_list_file, "List only regular files");
+    app.add_flag("-f,--file", flag_list_file, "List only regular files");
 
     // If true, show full path to file
     int fullpath = 0;
-    app.add_flag("--full-path", fullpath, "Show full path.");
+    app.add_flag("-p,--fullpath", fullpath, "Show full path.");
 
     int recursive = 0;
-    app.add_flag("--recursive", recursive, "List directory in a recursive way.");
+    app.add_flag("-r,--recursive", recursive, "List directory in a recursive way.");
 
     // ----- Parse Arguments ---------//
     try {
