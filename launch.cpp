@@ -31,7 +31,7 @@ bool is_tty_terminal()
   * @details It launches some application as a daemon process, without killing current
   *          process or littering the current terminal with stdout and stderr output
   *          of the launched process.
-  */
+  **********************************************************************************/
 std::optional<int>
 launch_as_daemon(std::string const& application
                 , std::vector<std::string> const& arguments = {})
@@ -40,7 +40,10 @@ launch_as_daemon(std::string const& application
 
     // If the PID of the forked process is negative
     // when the fork operation has fails.
-    if(pid < 0) { return std::nullopt;  }
+    if(pid < 0) {
+        std::cerr << " [ERROR] Unable to fork proces and launch " << application << "\n";
+        return std::nullopt;
+    }
 
     // If the PID is greater than zero, the current process
     // is the original or the parent one. Then the PID is returned
