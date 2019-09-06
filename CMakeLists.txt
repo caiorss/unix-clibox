@@ -59,5 +59,8 @@ add_executable(cb.text-search text-search.cpp)
 target_link_libraries(cb.text-search pthread stdc++fs)
 copy_after_build(cb.text-search)
 
+add_executable(cb.launch launch.cpp)
+target_link_libraries(cb.launch pthread stdc++fs)
+copy_after_build(cb.launch)
 
 
