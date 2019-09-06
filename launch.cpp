@@ -92,17 +92,32 @@ void show_dirs_in_path(std::ostream& os)
 
 int main(int argc, char** argv)
 {
-    CLI::App app{ "launcher"};
-    //app.footer("\n Creator: Somebody else.");
 
+    CLI::App app{ "launcher"};
+    app.footer("\n Command line utility for launching applications.");
+
+    CLI::App* cmd_run  = app.add_subcommand(
+        "run",
+        "Run some application"
+        );
+
+    CLI::App* cmd_path = app.add_subcommand(
+         "path"
+        ,"Show content of $PATH environment variable"
+        );
+#if 1
     // Sets directory that will be listed
     std::string application = ".";
-    app.add_option("<APPLICATION>", application
+    cmd_run->add_option("<APPLICATION>", application
                    , "Application to be launched as daemon")->required();
 
     bool flag_terminal;
-    app.add_flag("-t,--terminal", flag_terminal, "Launch application in terminal");
+    cmd_run->add_flag("-t,--terminal", flag_terminal, "Launch application in terminal");
 
+#endif
+
+
+    app.require_subcommand();
     // ----- Parse Arguments ---------//
     try {
         app.validate_positionals();
@@ -114,26 +129,27 @@ int main(int argc, char** argv)
 
     //------ Program Actions ---------//
 
-    if(!flag_terminal)
-    {
-        auto pid = launch_as_daemon(application);
-        if(pid) {
-            std::cout << " [INFO] Forked process launched successfully.\n"
-                      << " [INFO] Process pid = " << pid.value() << "\n";
+    // Check if subcommand processed
+    if(*cmd_run){
+        if(!flag_terminal)
+        {
+            auto pid = launch_as_daemon(application);
+            if(pid) {
+                std::cout << " [INFO] Forked process launched successfully.\n"
+                          << " [INFO] Process pid = " << pid.value() << "\n";
+            }
+        } else {
+            launch_app_terminal(application);
         }
-    } else {
-        launch_app_terminal(application);
+        return EXIT_SUCCESS;
     }
 
-#if 0
-    auto pid = launch_as_daemon(application);
-    if(pid) {
-        std::cout << " [INFO] Forked process launched successfully.\n"
-                  << " [INFO] Process pid = " << pid.value() << "\n";
-    } else {
-        std::cout << " [ERROR] Failed to launch process" << "\n";
+    if(*cmd_path)
+    {
+        show_dirs_in_path(std::cout);
+        return  EXIT_SUCCESS;
     }
-#endif
+
 
     return EXIT_SUCCESS;
 } // * ------ End of main() Function -------------- * //
