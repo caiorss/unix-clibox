@@ -101,7 +101,7 @@ void show_dirs_in_path(std::ostream& os)
     std::string dirpath;
 
     while(std::getline(ss, dirpath, ':'))
-        std::cout << "\t" << dirpath << std::endl;    
+        os << "\t" << dirpath << std::endl;
 }
 
 std::optional<std::string>
@@ -142,6 +142,10 @@ void relaunch_app_pid(int pid)
               << "\n";
 }
 
+
+   /*==================================================*
+    *     MAIN()  Function                             *
+    *==================================================*/
 
 int main(int argc, char** argv)
 {
