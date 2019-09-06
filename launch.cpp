@@ -71,6 +71,11 @@ launch_as_daemon(std::string const& application
     return ::execvp(application.c_str(), (char* const*) &pargs[0]);
 }
 
+void launch_app_terminal(std::string const& application)
+{
+    launch_as_daemon("xterm", {"-hold", "-e", application });
+}
+
 
 int main(int argc, char** argv)
 {
