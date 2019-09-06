@@ -87,6 +87,9 @@ int main(int argc, char** argv)
     app.add_option("<APPLICATION>", application
                    , "Application to be launched as daemon")->required();
 
+    bool flag_terminal;
+    app.add_flag("-t,--terminal", flag_terminal, "Launch application in terminal");
+
     // ----- Parse Arguments ---------//
     try {
         app.validate_positionals();
@@ -98,6 +101,18 @@ int main(int argc, char** argv)
 
     //------ Program Actions ---------//
 
+    if(!flag_terminal)
+    {
+        auto pid = launch_as_daemon(application);
+        if(pid) {
+            std::cout << " [INFO] Forked process launched successfully.\n"
+                      << " [INFO] Process pid = " << pid.value() << "\n";
+        }
+    } else {
+        launch_app_terminal(application);
+    }
+
+#if 0
     auto pid = launch_as_daemon(application);
     if(pid) {
         std::cout << " [INFO] Forked process launched successfully.\n"
@@ -105,6 +120,7 @@ int main(int argc, char** argv)
     } else {
         std::cout << " [ERROR] Failed to launch process" << "\n";
     }
+#endif
 
     return EXIT_SUCCESS;
 } // * ------ End of main() Function -------------- * //
