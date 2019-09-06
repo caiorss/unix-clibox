@@ -7,6 +7,7 @@
 #include <optional>
 #include <cstring> // strtok
 #include <vector>
+#include <climits>
 #include <cstdlib>
 #include <cassert>
 
@@ -14,7 +15,11 @@
 #include <CLI/CLI.hpp>
 
 //---- Linux/POSIX specific Headers ---//
+#include <linux/limits.h> // PATH_MAX
+
 #include <unistd.h>
+#include <sys/types.h>
+#include <signal.h>
 
 
 bool is_tty_terminal()
@@ -96,7 +101,45 @@ void show_dirs_in_path(std::ostream& os)
     std::string dirpath;
 
     while(std::getline(ss, dirpath, ':'))
-        std::cout << "\t" << dirpath << std::endl;
+        std::cout << "\t" << dirpath << std::endl;    
+}
+
+std::optional<std::string>
+get_symlink_realpath(std::string const& path)
+{
+    auto buffer = std::string(PATH_MAX, 0x00);
+    char* result = ::realpath(path.c_str(), buffer.data());
+    if(result){ return std::make_optional(buffer); }
+    return std::nullopt;
+}
+
+void relaunch_app_pid(int pid)
+{
+    using namespace std::string_literals;
+
+    // Executable path
+    auto exe = get_symlink_realpath("/proc/"s + std::to_string(pid) + "/exe");
+    // Current working directory
+    auto cwd  = get_symlink_realpath("/proc/"s + std::to_string(pid) + "/cwd");
+
+    if(!exe || !cwd){
+        throw std::runtime_error("Error: process of pid: <"s
+                                 + std::to_string(pid) + "> not found. ");
+    }
+
+    // Kill process
+    ::kill(pid, 9);
+    // Restart process
+    auto pid_new = launch_as_daemon(exe.value(), {}, cwd.value());
+
+    if(!pid_new){
+        throw std::runtime_error("Error: failed to relaunch process");
+    }
+    std::cout << " [INFO] Relaunched application: "
+              << "\n        pid = " << pid_new.value()
+              << "\n executable = " << exe.value()
+              << "\n  directory = " << cwd.value()
+              << "\n";
 }
 
 
@@ -106,20 +149,17 @@ int main(int argc, char** argv)
     CLI::App app{ "launcher"};
     app.footer("\n Command line utility for launching applications.");
 
+    //----- Run command settings -----------------//
+
     CLI::App* cmd_run  = app.add_subcommand(
-        "run",
-        "Run some application"
+         "run"
+        ,"Run some application"
         );
 
-    CLI::App* cmd_path = app.add_subcommand(
-         "path"
-        ,"Show content of $PATH environment variable"
-        );
-#if 1
     // Sets directory that will be listed
     std::string application = ".";
     cmd_run->add_option("<APPLICATION>", application
-                   , "Application to be launched as daemon")->required();
+                        , "Application to be launched as daemon")->required();
 
     bool flag_terminal = false;
     cmd_run->add_flag("-t,--terminal", flag_terminal
@@ -129,11 +169,26 @@ int main(int argc, char** argv)
     cmd_run->add_option("-d,--dir", cwd
                         , "Current directory of launched process");
 
-#endif
+    //----- Path command settings -----------------//
 
+    CLI::App* cmd_path = app.add_subcommand(
+         "path"
+        ,"Show content of $PATH environment variable"
+        );
 
+    //----- Relaunch command settings -----------------//
+
+    CLI::App* cmd_relaunch = app.add_subcommand(
+         "relaunch-pid"
+        ,"Relaunch a process that got frozen given its PID"
+        );
+    int pid_to_relaunch;
+    cmd_relaunch->add_option("<PID>", pid_to_relaunch
+                             , "PID of application to be relaunched")->required();
+
+    // ----------- Parse Arguments ---------------//
     app.require_subcommand();
-    // ----- Parse Arguments ---------//
+
     try {
         app.validate_positionals();
         CLI11_PARSE(app, argc, argv);
@@ -142,9 +197,9 @@ int main(int argc, char** argv)
         return EXIT_FAILURE;
     }
 
-    //------ Program Actions ---------//
+    //------------ Program Actions --------------------//
 
-    // Check if subcommand processed
+    // Command: run => Launch a process
     if(*cmd_run){
         if(!flag_terminal)
         {
@@ -159,12 +214,23 @@ int main(int argc, char** argv)
         return EXIT_SUCCESS;
     }
 
+    // Command: path show directories in PATH environment variable
     if(*cmd_path)
     {
         show_dirs_in_path(std::cout);
         return  EXIT_SUCCESS;
     }
 
+    if(*cmd_relaunch)
+    {
+        try {
+            relaunch_app_pid(pid_to_relaunch);
+        } catch(std::runtime_error& ex)
+        {
+            std::cerr << " [ERROR] " << ex.what() << "\n";
+        }
+        return EXIT_SUCCESS;
+    }
 
     return EXIT_SUCCESS;
 } // * ------ End of main() Function -------------- * //
