@@ -76,6 +76,19 @@ void launch_app_terminal(std::string const& application)
     launch_as_daemon("xterm", {"-hold", "-e", application });
 }
 
+/** Print directories listed in PATH environment variable.
+ *  Operating Systems.
+ *  Requires: <iostream>, <cstdlib> <sstream>
+ **********************************************************/
+void show_dirs_in_path(std::ostream& os)
+{
+    std::stringstream ss{ ::getenv("PATH") };
+    std::string dirpath;
+
+    while(std::getline(ss, dirpath, ':'))
+        std::cout << "\t" << dirpath << std::endl;
+}
+
 
 int main(int argc, char** argv)
 {
