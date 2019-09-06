@@ -31,17 +31,23 @@ bool is_tty_terminal()
   * @details It launches some application as a daemon process, without killing current
   *          process or littering the current terminal with stdout and stderr output
   *          of the launched process.
+  *
+  * @param program Program to be launched
+  * @param args    Arguments of the program to be launched
+  * @param cwd     Current working directory of the program to be launched
+  *
   **********************************************************************************/
 std::optional<int>
-launch_as_daemon(std::string const& application
-                , std::vector<std::string> const& arguments = {})
+launch_as_daemon( std::string              const& program
+                , std::vector<std::string> const& args
+                , std::string              const& cwd = ".")
 {
     int pid = ::fork();
 
     // If the PID of the forked process is negative
     // when the fork operation has fails.
     if(pid < 0) {
-        std::cerr << " [ERROR] Unable to fork proces and launch " << application << "\n";
+        std::cerr << " [ERROR] Unable to fork proces and launch " << program << "\n";
         return std::nullopt;
     }
 
@@ -51,9 +57,13 @@ launch_as_daemon(std::string const& application
     if(pid > 0) { return pid; }
 
     // ---- Forked process (pid == 0) --- //
+    //------------------------------------//
     assert(pid == 0 && "PID should be zero");
     ::setsid();
     ::umask(0);
+
+    // Set current directory of daemon process
+    ::chdir(cwd.c_str());
 
     // Close stdin, stdout and stderr file descriptors to avoid
     // littering the parent process output.
@@ -61,19 +71,19 @@ launch_as_daemon(std::string const& application
     ::close(STDOUT_FILENO);
     ::close(STDERR_FILENO);
 
-    std::vector<const char*> pargs(arguments.size() + 1);
-    pargs[0] = application.c_str();
-    std::transform(arguments.begin(), arguments.end(), pargs.begin() + 1
+    std::vector<const char*> pargs(args.size() + 1);
+    pargs[0] = program.c_str();
+    std::transform(args.begin(), args.end(), pargs.begin() + 1
                    , [](auto const& s){ return s.c_str(); });
     pargs.push_back(nullptr);
 
     // Dummy return
-    return ::execvp(application.c_str(), (char* const*) &pargs[0]);
+    return ::execvp(program.c_str(), (char* const*) &pargs[0]);
 }
 
-void launch_app_terminal(std::string const& application)
+void launch_app_terminal(std::string const& application, std::string const& cwd = ".")
 {
-    launch_as_daemon("xterm", {"-hold", "-e", application });
+    launch_as_daemon("xterm", {"-hold", "-e", application }, cwd);
 }
 
 /** Print directories listed in PATH environment variable.
@@ -111,8 +121,13 @@ int main(int argc, char** argv)
     cmd_run->add_option("<APPLICATION>", application
                    , "Application to be launched as daemon")->required();
 
-    bool flag_terminal;
-    cmd_run->add_flag("-t,--terminal", flag_terminal, "Launch application in terminal");
+    bool flag_terminal = false;
+    cmd_run->add_flag("-t,--terminal", flag_terminal
+                      , "Launch application in terminal");
+
+    std::string cwd = ".";
+    cmd_run->add_option("-d,--dir", cwd
+                        , "Current directory of launched process");
 
 #endif
 
@@ -133,13 +148,13 @@ int main(int argc, char** argv)
     if(*cmd_run){
         if(!flag_terminal)
         {
-            auto pid = launch_as_daemon(application);
+            auto pid = launch_as_daemon(application, {}, cwd);
             if(pid) {
                 std::cout << " [INFO] Forked process launched successfully.\n"
                           << " [INFO] Process pid = " << pid.value() << "\n";
             }
         } else {
-            launch_app_terminal(application);
+            launch_app_terminal(application, cwd);
         }
         return EXIT_SUCCESS;
     }
