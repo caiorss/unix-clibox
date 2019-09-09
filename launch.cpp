@@ -78,6 +78,18 @@ public:
 
 private:
 
+    int exec(std::string program, std::vector<std::string> const& args)
+    {
+        std::vector<const char*> pargs(args.size() + 1);
+        pargs[0] = program.c_str();
+        std::transform(args.begin(), args.end(), pargs.begin() + 1
+                       , [](auto const& s){ return s.c_str(); });
+        pargs.push_back(nullptr);
+
+        // Dummy return
+        return ::execvp(program.c_str(), (char* const*) &pargs[0]);
+    }
+
     std::optional<int>
     launch_impl(std::string program, std::vector<std::string> const& args)
     {
