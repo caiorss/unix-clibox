@@ -70,6 +70,9 @@ public:
     std::optional<int>
     launch(std::vector<std::string> const& args = {})
     {
+        if(m_exec)
+            return this->exec(m_program, args);
+
         if(!m_terminal)
             return this->launch_impl(m_program, args);
         else
@@ -136,15 +139,7 @@ private:
                 ::dup2(fd, ::fileno(stdin));
             }
         }
-
-        std::vector<const char*> pargs(args.size() + 1);
-        pargs[0] = program.c_str();
-        std::transform(args.begin(), args.end(), pargs.begin() + 1
-                       , [](auto const& s){ return s.c_str(); });
-        pargs.push_back(nullptr);
-
-        // Dummy return
-        return ::execvp(program.c_str(), (char* const*) &pargs[0]);
+        return this->exec(program, args);
     }
 };
 
@@ -224,6 +219,10 @@ int main(int argc, char** argv)
     cmd_run->add_option("<APPLICATION>", application
                         , "Application to be launched as daemon")->required();
 
+    bool flag_exec = false;
+    cmd_run->add_flag("-e,--exec", flag_exec
+                      , "Run application in the current terminal.");
+
     bool flag_terminal = false;
     cmd_run->add_flag("-t,--terminal", flag_terminal
                       , "Launch application in terminal");
@@ -273,6 +272,7 @@ int main(int argc, char** argv)
         auto app = AppLauncher(application);
         app.set_cwd(cwd);
         app.set_terminal(flag_terminal);
+        app.set_exec(flag_exec);
         if(logfile != "") app.set_logfile(logfile);
         auto pid = app.launch({});
 
