@@ -39,6 +39,7 @@ class AppLauncher
     std::string                m_cwd      = ".";
     std::optional<std::string> m_logfile  = std::nullopt;
     bool                       m_terminal = false;
+    bool                       m_exec     = false;
 
 public:
 
@@ -59,6 +60,11 @@ public:
     void set_terminal(bool flag)
     {
         this->m_terminal = flag;
+    }
+
+    void set_exec(bool flag)
+    {
+        this->m_exec = flag;
     }
 
     std::optional<int>
