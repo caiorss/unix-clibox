@@ -9,6 +9,7 @@
 #include <vector>
 #include <climits>
 #include <cstdlib>
+#include <algorithm>
 #include <cassert>
 
 //---- Library Headers -----------------//
@@ -256,10 +257,31 @@ int main(int argc, char** argv)
     // ----------- Parse Arguments ---------------//
     app.require_subcommand();
 
-    try {
+
+    std::vector<std::string> arguments(argv, argv + argc);
+    std::vector<const char*> app_args;
+    std::vector<std::string> rest_args;
+
+    auto it = std::find_if(arguments.begin(), arguments.end(),
+                           [](std::string const& st)
+                           {
+                               return st == "--";
+                           });
+
+    // std::copy(arguments.begin(), it, std::back_inserter(app_args));
+    std::copy(it + 1, arguments.end(), std::back_inserter(rest_args));
+    std::transform(arguments.begin(), it, std::back_inserter(app_args),
+                   [](std::string& str){ return str.data(); });
+
+    try
+    {
         app.validate_positionals();
-        CLI11_PARSE(app, argc, argv);
-    } catch (std::exception& ex) {
+        app.parse(app_args.size(), app_args.data());
+    } catch(const CLI::ParseError &e)
+    {
+        return (app).exit(e);
+    } catch (std::exception& ex)
+    {
         std::cout << ex.what() << std::endl;
         return EXIT_FAILURE;
     }
@@ -274,7 +296,7 @@ int main(int argc, char** argv)
         app.set_terminal(flag_terminal);
         app.set_exec(flag_exec);
         if(logfile != "") app.set_logfile(logfile);
-        auto pid = app.launch({});
+        auto pid = app.launch(rest_args);
 
         if(pid) {
             std::cout << " [INFO] Forked process launched successfully.\n"
