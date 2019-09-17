@@ -120,13 +120,16 @@ int main(int argc, char** argv)
     app.add_option("<DIRECTORY>", path)->required();
 
     bool flag_recursive = false;
-    app.add_flag("--recursive", flag_recursive);
+    app.add_flag("--recursive", flag_recursive,
+                 "Iterate in a directory and all its subdirectories");
 
     bool flag_commit = false;
-    app.add_flag("--commit", flag_commit);
+    app.add_flag("--commit", flag_commit,
+                 "Confirm renaming file, note: it cannot be undone");
 
     bool flag_silent = false;
-    app.add_flag("--silent", flag_silent);
+    app.add_flag("--silent", flag_silent,
+                 "Suppress log messages.");
 
     // ----------- Parse Arguments ---------------//
 
