@@ -160,7 +160,40 @@ void dump_binary_t(std::string const& file, size_t size,  long offset)
 
     if constexpr (std::is_same<T, char>::value)
     {
-        print_char_bytes(std::cout, arr);
+        size_t count = 0;
+
+        for(const auto& ch: arr)
+        {
+            if(count == 15){
+                count = 0;
+                std::cout << "\n";
+            } else {
+                count++;
+            }
+
+            if(ch == '\r'){
+                std::cout <<  "\\r";
+                continue;
+            }
+            if(ch == '\n'){
+                std::cout << "\\n";
+                continue;
+            }
+            if(ch == '\t'){
+                std::cout << "\\t";
+                continue;
+            }
+
+            if(std::isprint(ch))
+                std::cout << std::setfill(' ') << std::setw(3) << ch;
+            else
+                std::cout << std::setfill(' ') << std::setw(3)
+                          << " " << "\\x" << std::hex << std::setw(2) << std::setfill('0')
+                          << (0xFF & static_cast<int>(ch))
+                          << std::dec;
+        }
+
+
     } else if constexpr (std::is_same<T, std::uint8_t>::value)
     {
         std::cout << std::hex << std::uppercase;
@@ -221,6 +254,11 @@ int main(int argc, char** argv)
     size_t size = 1;
     cmd_dump->add_option("--size", size);
 
+    data_type dtype = data_type::t_byte;
+    cmd_dump->add_set("--type", dtype,
+                      {data_type::t_char, data_type::t_byte, data_type::t_i16}
+                      ,"Set display type => char (0), byte (1), i16 (3)" );
+
     // ----- Parse Arguments ---------//
     try {
         app.require_subcommand();
@@ -243,7 +281,7 @@ int main(int argc, char** argv)
 
     if(*cmd_dump)
     {
-        dump_binary(file, data_type::t_byte, size, offset);
+        dump_binary(file, dtype, size, offset);
         return EXIT_SUCCESS;
     }
 
