@@ -138,6 +138,15 @@ void command_strings(std::string const& file)
 }
 
 
+enum class binary_type
+{
+      t_byte
+    , t_char
+    , t_i8, t_i16, t_i32, t_i64
+    , t_flt32
+    , t_flt64,
+};
+
 int main(int argc, char** argv)
 {
     CLI::App app{ "hextool - Tool for analysis of binary files"};
