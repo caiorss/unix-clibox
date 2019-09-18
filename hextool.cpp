@@ -138,23 +138,24 @@ void command_strings(std::string const& file)
 }
 
 
-enum class binary_type
+enum class data_type
 {
       t_byte
     , t_char
     , t_i8, t_i16, t_i32, t_i64
+    , t_u8, t_u16, t_u32, t_u64
     , t_flt32
     , t_flt64,
 };
 
 void dump_binary(std::string const& file
-                 , binary_type t, size_t size,  long offset)
+                 , data_type t, size_t size,  long offset)
 {
     auto ifs = open_binary_file(file);
 
     if(offset > 0){ ifs.seekg(offset); }
 
-    if(t == binary_type::t_byte)
+    if(t == data_type::t_byte)
     {
         ByteArray arr(size);
         ifs.read(reinterpret_cast<char*>(arr.data()), arr.size() * sizeof(std::uint8_t));
@@ -208,7 +209,7 @@ int main(int argc, char** argv)
 
     if(*cmd_dump)
     {
-        dump_binary(file, binary_type::t_byte, size, offset);
+        dump_binary(file, data_type::t_byte, size, offset);
     }
 
     return EXIT_SUCCESS;
