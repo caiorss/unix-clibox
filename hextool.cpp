@@ -175,6 +175,17 @@ int main(int argc, char** argv)
     std::string file;
     cmd_strings->add_option("<FILE>", file)->required();
 
+    auto cmd_dump = app.add_subcommand("dump-bytes"
+                                       , "Read binary file at some offset");
+
+    cmd_dump->add_option("<FILE>", file)->required();
+
+    long offset = -1;
+    cmd_dump->add_option("--offset", offset);
+
+    size_t size = 1;
+    cmd_dump->add_option("--size", size);
+
     // ----- Parse Arguments ---------//
     try {
         app.require_subcommand();
@@ -193,6 +204,11 @@ int main(int argc, char** argv)
         command_strings(file);
 
         return EXIT_SUCCESS;
+    }
+
+    if(*cmd_dump)
+    {
+        dump_binary(file, binary_type::t_byte, size, offset);
     }
 
     return EXIT_SUCCESS;
