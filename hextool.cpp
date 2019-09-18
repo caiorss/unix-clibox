@@ -6,10 +6,10 @@
 
 #include <CLI/CLI.hpp>
 
-using ByteArray = std::vector<std::uint8_t>;
+using ByteArray = std::vector<char>;
 
 /** Print byte array as string and non-printable chars as hexadecimal */
-std::ostream& operator<<(std::ostream& os, const ByteArray& str)
+void print_char_bytes(std::ostream& os, const ByteArray& str)
 {
     for(const auto& ch: str)
     {
@@ -20,7 +20,6 @@ std::ostream& operator<<(std::ostream& os, const ByteArray& str)
                << static_cast<int>(ch) << " "
                << std::dec;
     }
-    return os;
 }
 
 bool operator==(ByteArray const& rhs, ByteArray const& lhs)
@@ -148,20 +147,45 @@ enum class data_type
     , t_flt64,
 };
 
-void dump_binary(std::string const& file
-                 , data_type t, size_t size,  long offset)
+template<typename T>
+void dump_binary_t(std::string const& file, size_t size,  long offset)
 {
     auto ifs = open_binary_file(file);
-
     if(offset > 0){ ifs.seekg(offset); }
 
-    if(t == data_type::t_byte)
+    std::vector<T> arr(size);
+    ifs.read(reinterpret_cast<char*>(arr.data()), arr.size() * sizeof(T));
+
+    std::cout << "\n";
+
+    if constexpr (std::is_same<T, char>::value)
     {
-        ByteArray arr(size);
-        ifs.read(reinterpret_cast<char*>(arr.data()), arr.size() * sizeof(std::uint8_t));
-        std::cout << " " << arr << "\n";
-        return;
+        print_char_bytes(std::cout, arr);
+    } else if constexpr (std::is_same<T, std::uint8_t>::value)
+    {
+        std::cout << std::hex << std::uppercase;
+        for(auto const& x: arr)
+            std::cout << std::setfill('0') << std::setw(2)
+                      << static_cast<int>(x) << " ";
+        std::cout << "\n";
+    } else {
+
+        for(auto const& x: arr)
+            std::cout << x << " ";
+        std::cout << "\n";
     }
+}
+
+void dump_binary(std::string const& file, data_type type, size_t size,  long offset)
+{
+    if(type == data_type::t_char)
+        dump_binary_t<char>(file, size, offset);
+
+    if(type == data_type::t_byte)
+        dump_binary_t<uint8_t>(file, size, offset);
+
+    if(type == data_type::t_i16)
+        dump_binary_t<uint16_t>(file, size, offset);
 }
 
 int main(int argc, char** argv)
@@ -210,6 +234,7 @@ int main(int argc, char** argv)
     if(*cmd_dump)
     {
         dump_binary(file, data_type::t_byte, size, offset);
+        return EXIT_SUCCESS;
     }
 
     return EXIT_SUCCESS;
