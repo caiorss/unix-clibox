@@ -169,7 +169,8 @@ int main(int argc, char** argv)
     //app.footer("\n Creator: Somebody else.");
 
      // Dump printable characters of a binary file
-    auto cmd_strings = app.add_subcommand("strings");
+    auto cmd_strings = app.add_subcommand("dump-strings",
+                                          "Dump all printable strings of a binary file");
 
     std::string file;
     cmd_strings->add_option("<FILE>", file)->required();
