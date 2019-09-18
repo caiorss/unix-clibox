@@ -68,11 +68,6 @@ void command_strings(std::string const& file)
     };
 
     auto ifs = open_binary_file(file);
-    std::uint8_t byte = 0x00;
-
-    auto state = strings_state::initial;
-
-    std::cout << std::hex;
 
     auto print_byte = [](std::uint8_t x)
     {
@@ -87,13 +82,20 @@ void command_strings(std::string const& file)
         return std::isprint(ch);
     };
 
+    std::uint8_t byte = 0x00;
+    auto state = strings_state::initial;
+    std::stringstream buffer;
+
     while(ifs)
     {
         if(state == strings_state::initial)
         {
+            buffer.str("");
+
             ifs >> byte;
             if(is_printable(byte)){
-                print_byte(byte);
+                // print_byte(byte);
+                buffer << byte;
                 state = strings_state::printable;
                 continue;
             }
@@ -105,7 +107,8 @@ void command_strings(std::string const& file)
         {
             ifs >> byte;
             if(is_printable(byte)){
-                print_byte(byte);
+                // print_byte(byte);
+                buffer << byte;
                 state = strings_state::printable;
                 continue;
             }
@@ -117,11 +120,16 @@ void command_strings(std::string const& file)
         {
             ifs >> byte;
             if(is_printable(byte)){
-                print_byte(byte);
+                // print_byte(byte);
+                buffer << byte;
                 state = strings_state::printable;
                 continue;
             }
-            std::cout << std::endl;
+
+            if(buffer.str().size() >= 3)
+                std::cout << buffer.str() << std::endl;
+
+            buffer.str(""); // Reset buffer
             state = strings_state::skip;
             continue;
         }
