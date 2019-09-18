@@ -164,9 +164,19 @@ void dump_binary_t(std::string const& file, size_t size,  long offset)
     } else if constexpr (std::is_same<T, std::uint8_t>::value)
     {
         std::cout << std::hex << std::uppercase;
-        for(auto const& x: arr)
+
+        size_t count = 0;
+
+        for(auto const& x: arr){
             std::cout << std::setfill('0') << std::setw(2)
                       << static_cast<int>(x) << " ";
+            if(count == 15){
+                count = 0;
+                std::cout << "\n";
+                continue;
+            }
+            count++;
+        }
         std::cout << "\n";
     } else {
 
