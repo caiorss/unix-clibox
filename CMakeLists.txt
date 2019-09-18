@@ -55,17 +55,24 @@ add_executable(cb.ls listdir.cpp)
 target_link_libraries(cb.ls pthread stdc++fs)
 copy_after_build(cb.ls)
 
+# Command line tool for searching text in many files and directories
 add_executable(cb.text-search text-search.cpp)
 target_link_libraries(cb.text-search pthread stdc++fs)
 copy_after_build(cb.text-search)
 
+# Command line tool for bulk rename of files.
 add_executable(cb.rename rename.cpp)
 target_link_libraries(cb.rename stdc++fs)
 copy_after_build(cb.rename)
 
-
+# Command line tool for launching applications and daemons on Linux
 add_executable(cb.launch launch.cpp)
 target_link_libraries(cb.launch pthread stdc++fs)
 copy_after_build(cb.launch)
+
+# Command line tool for analysis of binary files and forensic
+add_executable(cb.hextool hextool.cpp)
+target_link_libraries(cb.hextool)
+copy_after_build(cb.hextool)
 
 
