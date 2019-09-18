@@ -147,6 +147,22 @@ enum class binary_type
     , t_flt64,
 };
 
+void dump_binary(std::string const& file
+                 , binary_type t, size_t size,  long offset)
+{
+    auto ifs = open_binary_file(file);
+
+    if(offset > 0){ ifs.seekg(offset); }
+
+    if(t == binary_type::t_byte)
+    {
+        ByteArray arr(size);
+        ifs.read(reinterpret_cast<char*>(arr.data()), arr.size() * sizeof(std::uint8_t));
+        std::cout << " " << arr << "\n";
+        return;
+    }
+}
+
 int main(int argc, char** argv)
 {
     CLI::App app{ "hextool - Tool for analysis of binary files"};
