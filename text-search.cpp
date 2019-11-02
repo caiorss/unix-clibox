@@ -192,7 +192,7 @@ namespace fileutils
              {
                 // std::cout << " FIle = " << p.filename() << std::endl;
 
-                 search_file(not_show_lines, true, fs::absolute(p)
+                 search_file(not_show_lines, show_abspath, fs::absolute(p)
                            , [=](std::string const& line)
                              {
                                  return contains_string2( to_lowercase(pattern)
@@ -209,17 +209,19 @@ struct text_search_options
     std::string              pattern    = "";
     std::vector<std::string> filepaths  = {};
     bool                     use_regex  = false;
+    bool                     show_abspath = false;
     bool                     noline     = false;
 };
 
 struct directory_search_options
 {
-    std::string              pattern         = "";
-    std::string              directory       = ".";
-    bool                     recursive       = false;
-    bool                     use_regex       = false;
-    bool                     noline          = false;
-    std::vector<std::string> file_extensions = {};
+    std::string              pattern          = "";
+    std::string              directory         = ".";
+    bool                     recursive         = false;
+    bool                     use_regex         = false;
+    bool                     noline            = false;
+    bool                     not_show_abspath  = false;
+    std::vector<std::string> file_extensions   = {};
 
 };
 
@@ -273,6 +275,7 @@ int main(int argc, char** argv)
     cmd_dir->add_flag("--regex", dir_opt.use_regex, "Use regex");
     cmd_dir->add_flag("--noline", dir_opt.noline, "Does not show lines");
     cmd_dir->add_flag("-r,--recursive", dir_opt.recursive, "Search all subdirectories too");
+    cmd_dir->add_flag("--noabs", dir_opt.not_show_abspath, "Do not show absolute path");
     cmd_dir->add_option("-e,--extension", dir_opt.file_extensions, "File extensions to be searched");
 
 
@@ -322,6 +325,7 @@ int main(int argc, char** argv)
                                     , dir_opt.directory
                                     , dir_opt.recursive
                                     , dir_opt.noline
+                                    , !dir_opt.not_show_abspath
                                     , dir_opt.file_extensions
                                     );
 
