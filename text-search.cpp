@@ -59,6 +59,19 @@ namespace fileutils
              }
      }
 
+     template<typename Predicate, typename Action>
+     void iterate_recursive_dirlist(std::string path, Predicate&& pred, Action&& act)
+     {
+         for(auto& p: fs::recursive_directory_iterator(path))
+             if(pred(p)) {
+                 try { act(p); }
+                 catch(fs::filesystem_error& ex)
+                 {
+                     std::cerr << ex.what() << "\n";
+                 }
+             }
+     }
+
      /** Higher-order function for reading a file line-by-line */
      template<typename Action>
      void process_line(std::string const& filename, Action&& line_processor)
