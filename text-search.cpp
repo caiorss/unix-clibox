@@ -134,7 +134,13 @@ namespace fileutils
 
 } // * --- End of namespace fileutils --- * //
 
-
+struct text_search_options
+{
+    std::string              pattern    = "";
+    std::vector<std::string> filepaths  = {};
+    bool                     use_regex  = false;
+    bool                     noline     = false;
+};
 
 int main(int argc, char** argv)
 {
