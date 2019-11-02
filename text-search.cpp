@@ -173,6 +173,9 @@ int main(int argc, char** argv)
     CLI::App app{ "text-search"};
     //app.footer("\n Creator: Somebody else.");
 
+    //-------------------------------------------------------------//
+    //               Subcommand FILE                               //
+    //-------------------------------------------------------------//
 
     auto cmd_file = app.add_subcommand("file",
                                        "Search a single or multiple file for some pattern.");
@@ -193,6 +196,30 @@ int main(int argc, char** argv)
     // If this flag is set, this cmd_file-> does not show the line number
     // ,instead only print the file names where the pattern was found.
     cmd_file->add_flag("--noline", opt_file.noline, "Does not show lines");
+
+
+    //------------------------------------------------------------------//
+    //               Subcommand DIRECTORY                               //
+    //------------------------------------------------------------------//
+    // Search all files from a directory recusively matching
+    // a given text pattern and a file pattern such as file textension.
+    //
+
+    directory_search_options dir_opt;
+
+    auto cmd_dir = app.add_subcommand("dir",
+                                      "Search files from a directory mathcing a file name and text patterns");
+
+    cmd_dir->add_option("<PATTERN>", dir_opt.pattern, "Text patterb")->required();
+
+    // Sets directory that will be listed
+    cmd_dir->add_option("<DIRECTORY>", dir_opt.directory
+                         , "Direcotry to be searched")->required();
+    cmd_dir->add_flag("--regex", dir_opt.use_regex, "Use regex");
+    cmd_dir->add_flag("--noline", dir_opt.noline, "Does not show lines");
+    cmd_dir->add_option("-e,--extension", dir_opt.file_extensions, "File extensions to be searched");
+    cmd_dir->add_option("-r,--recursive", dir_opt.recursive, "Search all subdirectories too");
+
 
     // ----- Parse Arguments ---------//
     try {
