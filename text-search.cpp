@@ -166,6 +166,41 @@ namespace fileutils
                      });
      }
 
+     void search_directory(  std::string pattern
+                           , std::string directory
+                           , bool recursive
+                           , bool not_show_lines
+                           , std::vector<std::string> const& file_extensions)
+     {
+         std::puts("\n =========== Seaching files =============");
+
+         iterate_dirlist(directory, recursive
+             ,[=](fs::path const& p)
+             {
+                 if(!fs::is_regular_file(p)) return false;
+
+                 auto it = std::find_if( file_extensions.begin()
+                                       , file_extensions.end()
+                                       , [=](std::string const& ext)
+                                        {
+                                            return ends_with(p.filename().string(), ext);
+                                        });
+
+                 return it != file_extensions.end();
+             }
+             ,[=](fs::path const& p)
+             {
+                // std::cout << " FIle = " << p.filename() << std::endl;
+
+                 search_file(not_show_lines, true, fs::absolute(p)
+                           , [=](std::string const& line)
+                             {
+                                 return contains_string2( to_lowercase(pattern)
+                                                        , to_lowercase(line)) ;
+                             });
+             });
+     }
+
 
 } // * --- End of namespace fileutils --- * //
 
