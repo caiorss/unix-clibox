@@ -162,25 +162,31 @@ int main(int argc, char** argv)
     CLI::App app{ "text-search"};
     //app.footer("\n Creator: Somebody else.");
 
+
+    auto cmd_file = app.add_subcommand("file",
+                                       "Search a single or multiple file for some pattern.");
+
+
     text_search_options opt_file;
 
-    app.add_option("<PATTERN>", opt_file.pattern, "Text pattern")->required();
+    cmd_file->add_option("<PATTERN>", opt_file.pattern, "Text pattern")->required();
 
     // Sets directory that will be listed
-    app.add_option("<FILE>", opt_file.filepaths
+    cmd_file->add_option("<FILE>", opt_file.filepaths
                    , "File to be searched")->required();
 
     // If the flag is set (true), this application uses the regex
     // for searching in the target file instead of an input text.
-    app.add_flag("--regex", opt_file.use_regex, "Use regex");
+    cmd_file->add_flag("--regex", opt_file.use_regex, "Use regex");
 
-    // If this flag is set, this app. does not show the line number
+    // If this flag is set, this cmd_file-> does not show the line number
     // ,instead only print the file names where the pattern was found.
-    app.add_flag("--noline", opt_file.noline, "Does not show lines");
+    cmd_file->add_flag("--noline", opt_file.noline, "Does not show lines");
 
     // ----- Parse Arguments ---------//
     try {
-        app.validate_positionals();
+        app.require_subcommand();
+        app.validate_positionals();        
         CLI11_PARSE(app, argc, argv);
     } catch (std::exception& ex) {
         std::cout << ex.what() << std::endl;
@@ -191,25 +197,28 @@ int main(int argc, char** argv)
 
     std::cout << "\n Seach results for pattern: '" << opt_file.pattern << "'";
 
-    for (auto const& fname : opt_file.filepaths)
+    // process subcommand: text-search file
+    if(*cmd_file)
     {
-        try
+        for (auto const& fname : opt_file.filepaths)
         {
-            if(!opt_file.use_regex)
-                fileutils::search_file_for_text(opt_file.pattern, fname, opt_file.noline);
-            else
-                fileutils::search_file_for_regex(opt_file.pattern, fname, opt_file.noline);
-        } catch (std::logic_error& ex)
-        {
-            std::cerr << " [ERROR / FILE] " << ex.what() << "\n";
-            return  EXIT_FAILURE;
-        } catch  (std::regex_error& ex)
-        {
-            std::cerr << " [ERROR / REGEX] " << ex.what() << "\n";
-            return EXIT_FAILURE;
+            try
+            {
+                if(!opt_file.use_regex)
+                    fileutils::search_file_for_text(opt_file.pattern, fname, opt_file.noline);
+                else
+                    fileutils::search_file_for_regex(opt_file.pattern, fname, opt_file.noline);
+            } catch (std::logic_error& ex)
+            {
+                std::cerr << " [ERROR / FILE] " << ex.what() << "\n";
+                return  EXIT_FAILURE;
+            } catch  (std::regex_error& ex)
+            {
+                std::cerr << " [ERROR / REGEX] " << ex.what() << "\n";
+                return EXIT_FAILURE;
+            }
         }
     }
-
 
     return EXIT_SUCCESS;
 }
