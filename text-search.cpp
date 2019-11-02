@@ -157,6 +157,17 @@ struct text_search_options
     bool                     noline     = false;
 };
 
+struct directory_search_options
+{
+    std::string              pattern         = "";
+    std::string              directory       = ".";
+    bool                     recursive       = false;
+    bool                     use_regex       = false;
+    bool                     noline          = false;
+    std::vector<std::string> file_extensions = {};
+
+};
+
 int main(int argc, char** argv)
 {
     CLI::App app{ "text-search"};
