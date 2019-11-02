@@ -21,6 +21,11 @@ namespace strutils
                                         , std::boyer_moore_searcher(s.begin(), s.end()));
     }
 
+    bool ends_with(std::string const & value, std::string const & ending)
+    {
+        if (ending.size() > value.size()) return false;
+        return std::equal(ending.rbegin(), ending.rend(), value.rbegin());
+    }
 
    std::string
    to_lowercase(std::string const& text)
