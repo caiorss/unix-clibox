@@ -164,7 +164,6 @@ int main(int argc, char** argv)
 
     text_search_options opt_file;
 
-    std::string pattern;
     app.add_option("<PATTERN>", opt_file.pattern, "Text pattern")->required();
 
     // Sets directory that will be listed
@@ -190,16 +189,16 @@ int main(int argc, char** argv)
 
     //------ Program Actions ---------//
 
-    std::cout << "\n Seach results for pattern: '" << pattern << "'";
+    std::cout << "\n Seach results for pattern: '" << opt_file.pattern << "'";
 
     for (auto const& fname : opt_file.filepaths)
     {
         try
         {
             if(!opt_file.use_regex)
-                fileutils::search_file_for_text(pattern, fname, opt_file.noline);
+                fileutils::search_file_for_text(opt_file.pattern, fname, opt_file.noline);
             else
-                fileutils::search_file_for_regex(pattern, fname, opt_file.noline);
+                fileutils::search_file_for_regex(opt_file.pattern, fname, opt_file.noline);
         } catch (std::logic_error& ex)
         {
             std::cerr << " [ERROR / FILE] " << ex.what() << "\n";
