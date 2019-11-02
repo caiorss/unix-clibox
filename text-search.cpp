@@ -122,7 +122,9 @@ namespace fileutils
                      });
      }
 
-     void search_file_for_regex(std::string pattern, std::string filename, bool not_show_lines)
+     void search_file_for_regex( std::string pattern
+                               , std::string filename
+                               , bool not_show_lines)
      {
          std::regex reg{pattern};
          search_file(not_show_lines, filename, [=, &reg](std::string const& line)
@@ -147,22 +149,22 @@ int main(int argc, char** argv)
     CLI::App app{ "text-search"};
     //app.footer("\n Creator: Somebody else.");
 
+    text_search_options opt_text_search;
+
     std::string pattern;
-    app.add_option("<PATTERN>", pattern, "Text pattern")->required();
+    app.add_option("<PATTERN>", opt_text_search.pattern, "Text pattern")->required();
 
     // Sets directory that will be listed
-    std::vector<std::string> filepaths;
-    app.add_option("<FILE>", filepaths, "File to be searched")->required();
+    app.add_option("<FILE>", opt_text_search.filepaths
+                   , "File to be searched")->required();
 
     // If the flag is set (true), this application uses the regex
     // for searching in the target file instead of an input text.
-    bool use_regex = false;
-    app.add_flag("--regex", use_regex, "Use regex");
+    app.add_flag("--regex", opt_text_search.use_regex, "Use regex");
 
     // If this flag is set, this app. does not show the line number
     // ,instead only print the file names where the pattern was found.
-    bool noline = false;
-    app.add_flag("--noline", noline, "Does not show lines");
+    app.add_flag("--noline", opt_text_search.noline, "Does not show lines");
 
     // ----- Parse Arguments ---------//
     try {
@@ -177,14 +179,14 @@ int main(int argc, char** argv)
 
     std::cout << "\n Seach results for pattern: '" << pattern << "'";
 
-    for (auto const& fname : filepaths)
+    for (auto const& fname : opt_text_search.filepaths)
     {
         try
         {
-            if(!use_regex)
-                fileutils::search_file_for_text(pattern, fname, noline);
+            if(!opt_text_search.use_regex)
+                fileutils::search_file_for_text(pattern, fname, opt_text_search.noline);
             else
-                fileutils::search_file_for_regex(pattern, fname, noline);
+                fileutils::search_file_for_regex(pattern, fname, opt_text_search.noline);
         } catch (std::logic_error& ex)
         {
             std::cerr << " [ERROR / FILE] " << ex.what() << "\n";
