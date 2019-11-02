@@ -170,6 +170,7 @@ namespace fileutils
                            , std::string directory
                            , bool recursive
                            , bool not_show_lines
+                           , bool show_abspath
                            , std::vector<std::string> const& file_extensions)
      {
          std::puts("\n =========== Seaching files =============");
