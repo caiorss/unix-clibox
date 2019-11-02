@@ -52,21 +52,25 @@ namespace fileutils
      using namespace strutils;
 
      template<typename Predicate, typename Action>
-     void iterate_dirlist(std::string path, Predicate&& pred, Action&& act)
+     void iterate_dirlist(  std::string path
+                          , bool recursive
+                          , Predicate&& pred
+                          , Action&& act
+                          )
      {
-         for(auto& p: fs::directory_iterator(path))
-             if(pred(p)) {
-                 try { act(p); }
-                 catch(fs::filesystem_error& ex)
-                 {
-                     std::cerr << ex.what() << "\n";
+         if(!recursive)
+         {
+             for(auto& p: fs::directory_iterator(path))
+                 if(pred(p)) {
+                     try { act(p); }
+                     catch(fs::filesystem_error& ex)
+                     {
+                         std::cerr << ex.what() << "\n";
+                     }
                  }
-             }
-     }
+             return;
+         }
 
-     template<typename Predicate, typename Action>
-     void iterate_recursive_dirlist(std::string path, Predicate&& pred, Action&& act)
-     {
          for(auto& p: fs::recursive_directory_iterator(path))
              if(pred(p)) {
                  try { act(p); }
