@@ -272,8 +272,8 @@ int main(int argc, char** argv)
                          , "Direcotry to be searched")->required();
     cmd_dir->add_flag("--regex", dir_opt.use_regex, "Use regex");
     cmd_dir->add_flag("--noline", dir_opt.noline, "Does not show lines");
+    cmd_dir->add_flag("-r,--recursive", dir_opt.recursive, "Search all subdirectories too");
     cmd_dir->add_option("-e,--extension", dir_opt.file_extensions, "File extensions to be searched");
-    cmd_dir->add_option("-r,--recursive", dir_opt.recursive, "Search all subdirectories too");
 
 
     // ----- Parse Arguments ---------//
@@ -288,7 +288,7 @@ int main(int argc, char** argv)
 
     //------ Program Actions ---------//
 
-    std::cout << "\n Seach results for pattern: '" << opt_file.pattern << "'";
+    // std::cout << "\n Seach results for pattern: '" << opt_file.pattern << "'";
 
     // process subcommand: text-search file
     if(*cmd_file)
@@ -311,6 +311,21 @@ int main(int argc, char** argv)
                 return EXIT_FAILURE;
             }
         }
+    }
+
+    if(*cmd_dir)
+    {
+        std::cout << "   Pattern = " << dir_opt.pattern << std::endl;
+        std::cout << " Directory = " << dir_opt.directory << std::endl;
+
+        fileutils::search_directory(  dir_opt.pattern
+                                    , dir_opt.directory
+                                    , dir_opt.recursive
+                                    , dir_opt.noline
+                                    , dir_opt.file_extensions
+                                    );
+
+        return EXIT_SUCCESS;
     }
 
     return EXIT_SUCCESS;
