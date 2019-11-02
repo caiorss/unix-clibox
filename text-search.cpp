@@ -162,22 +162,22 @@ int main(int argc, char** argv)
     CLI::App app{ "text-search"};
     //app.footer("\n Creator: Somebody else.");
 
-    text_search_options opt_text_search;
+    text_search_options opt_file;
 
     std::string pattern;
-    app.add_option("<PATTERN>", opt_text_search.pattern, "Text pattern")->required();
+    app.add_option("<PATTERN>", opt_file.pattern, "Text pattern")->required();
 
     // Sets directory that will be listed
-    app.add_option("<FILE>", opt_text_search.filepaths
+    app.add_option("<FILE>", opt_file.filepaths
                    , "File to be searched")->required();
 
     // If the flag is set (true), this application uses the regex
     // for searching in the target file instead of an input text.
-    app.add_flag("--regex", opt_text_search.use_regex, "Use regex");
+    app.add_flag("--regex", opt_file.use_regex, "Use regex");
 
     // If this flag is set, this app. does not show the line number
     // ,instead only print the file names where the pattern was found.
-    app.add_flag("--noline", opt_text_search.noline, "Does not show lines");
+    app.add_flag("--noline", opt_file.noline, "Does not show lines");
 
     // ----- Parse Arguments ---------//
     try {
@@ -192,14 +192,14 @@ int main(int argc, char** argv)
 
     std::cout << "\n Seach results for pattern: '" << pattern << "'";
 
-    for (auto const& fname : opt_text_search.filepaths)
+    for (auto const& fname : opt_file.filepaths)
     {
         try
         {
-            if(!opt_text_search.use_regex)
-                fileutils::search_file_for_text(pattern, fname, opt_text_search.noline);
+            if(!opt_file.use_regex)
+                fileutils::search_file_for_text(pattern, fname, opt_file.noline);
             else
-                fileutils::search_file_for_regex(pattern, fname, opt_text_search.noline);
+                fileutils::search_file_for_regex(pattern, fname, opt_file.noline);
         } catch (std::logic_error& ex)
         {
             std::cerr << " [ERROR / FILE] " << ex.what() << "\n";
