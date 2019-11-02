@@ -101,7 +101,11 @@ namespace fileutils
      }
 
      template<typename MATCHER>
-     void search_file(bool not_show_lines, std::string filename, MATCHER&& matcher)
+     void search_file(  bool        not_show_lines
+                      , bool        show_abspath
+                      , std::string filename
+                      , MATCHER&&   matcher
+                      )
      {
          using namespace std::string_literals;
          long line_number = 0;
@@ -116,8 +120,14 @@ namespace fileutils
 
                               if(!pattern_found) {
                                   pattern_found = true;
+
+                                  auto file_path = show_abspath
+                                                  ? fs::absolute(p).string()
+                                                  : p.filename().string();
+
+
                                   std::cout << "\n\n"
-                                            << "  => File: "s + p.filename().string() << "\n";
+                                            << "  => File: "s + file_path << "\n";
                                   std::cout << "  " << std::string(50, '-') << "\n";
 
                                   // Exit this lambda function
@@ -137,7 +147,8 @@ namespace fileutils
 
      void search_file_for_text(std::string pattern, std::string filename, bool not_show_lines)
      {
-         search_file(not_show_lines, filename, [=](std::string const& line)
+         search_file(not_show_lines, true, filename,
+                     [=](std::string const& line)
                      {
                          return contains_string2( to_lowercase(pattern)
                                                 , to_lowercase(line)) ;
@@ -149,7 +160,7 @@ namespace fileutils
                                , bool not_show_lines)
      {
          std::regex reg{pattern};
-         search_file(not_show_lines, filename, [=, &reg](std::string const& line)
+         search_file(not_show_lines, true, filename, [=, &reg](std::string const& line)
                      {
                          return std::regex_search(line, reg) ;
                      });
