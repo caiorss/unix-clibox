@@ -48,21 +48,28 @@ public:
         : m_program(std::move(program))
     { }
 
+    /// Set process current directory
     void set_cwd(std::string cwd)
     {
         this->m_cwd = std::move(cwd);
     }
 
+    /// Set process log file to which the output (stderr and stdout)
+    /// will be redirected to.
     void set_logfile(std::string logfile)
     {
         this->m_logfile = std::move(logfile);
     }
 
+    /// If set to true, the application is launched in a new terminal
     void set_terminal(bool flag)
     {
         this->m_terminal = flag;
     }
 
+    /// If set to true, the application is launched in current terminal
+    /// replacing current process (not launched as a daemon wich is
+    /// the default behavior).
     void set_exec(bool flag)
     {
         this->m_exec = flag;
@@ -82,6 +89,7 @@ public:
 
 private:
 
+    /// Wrapper for exec POSIX C API function
     int exec(std::string program, std::vector<std::string> const& args)
     {
         std::vector<const char*> pargs(args.size() + 1);
@@ -126,6 +134,8 @@ private:
         ::close(STDOUT_FILENO);
         ::close(STDERR_FILENO);
 
+        // If the flag is true, redirect the process output
+        // to a log file.
         if(this->m_logfile)
         {
             FILE* fp = ::fopen(m_logfile.value().c_str(), "w");
